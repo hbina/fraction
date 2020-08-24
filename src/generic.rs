@@ -5,7 +5,7 @@
 //! some common traits.
 
 use super::{
-    /*Zero, One, */Integer,  CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, ToPrimitive,
+    CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, /*Zero, One, */ Integer, ToPrimitive,
 };
 use std::cmp::PartialOrd;
 use Sign;
@@ -14,7 +14,6 @@ use Sign;
 use super::{BigInt, BigUint, One, Signed, Zero};
 
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
-
 
 /// Methods common to all integer types that
 /// could be used generically in abstract algorithms
@@ -49,22 +48,22 @@ pub trait GenericInteger:
     + for<'a> SubAssign<&'a Self>
 {
     /// Returns value 0 of the type
-    fn _0() -> Self;
+    fn zero() -> Self;
 
     /// Returns value 1 of the type
-    fn _1() -> Self;
+    fn one() -> Self;
 
     /// Returns value 10 of the type
-    fn _10() -> Self;
+    fn ten() -> Self;
 
     /// Returns Maybe<static reference> of 0
-    fn _0r() -> Option<&'static Self>;
+    fn maybe_zero() -> Option<&'static Self>;
 
     /// Returns Maybe<static reference> of 1
-    fn _1r() -> Option<&'static Self>;
+    fn maybe_one() -> Option<&'static Self>;
 
     /// Returns Maybe<static reference> of 10
-    fn _10r() -> Option<&'static Self>;
+    fn maybe_ten() -> Option<&'static Self>;
 
     /// Returns the sign and the value itself.
     /// Zero values must have [Sign::Plus]
@@ -73,38 +72,38 @@ pub trait GenericInteger:
 
 #[cfg(feature = "with-bigint")]
 lazy_static! {
-    static ref _0_BU: BigUint = { BigUint::zero() };
-    static ref _1_BU: BigUint = { BigUint::one() };
-    static ref _10_BU: BigUint = { BigUint::from(10u8) };
-    static ref _0_BI: BigInt = { BigInt::zero() };
-    static ref _1_BI: BigInt = { BigInt::one() };
-    static ref _10_BI: BigInt = { BigInt::from(10i8) };
+    static ref _0_BU: BigUint = BigUint::zero();
+    static ref _1_BU: BigUint = BigUint::one();
+    static ref _10_BU: BigUint = BigUint::from(10u8);
+    static ref _0_BI: BigInt = BigInt::zero();
+    static ref _1_BI: BigInt = BigInt::one();
+    static ref _10_BI: BigInt = BigInt::from(10i8);
 }
 
 #[cfg(feature = "with-bigint")]
 impl GenericInteger for BigUint {
     #[inline]
-    fn _0() -> Self {
+    fn zero() -> Self {
         BigUint::zero()
     }
     #[inline]
-    fn _1() -> Self {
+    fn one() -> Self {
         BigUint::one()
     }
     #[inline]
-    fn _10() -> Self {
+    fn ten() -> Self {
         _10_BU.clone()
     }
     #[inline]
-    fn _0r() -> Option<&'static Self> {
+    fn maybe_zero() -> Option<&'static Self> {
         Some(&_0_BU)
     }
     #[inline]
-    fn _1r() -> Option<&'static Self> {
+    fn maybe_one() -> Option<&'static Self> {
         Some(&_1_BU)
     }
     #[inline]
-    fn _10r() -> Option<&'static Self> {
+    fn maybe_ten() -> Option<&'static Self> {
         Some(&_10_BU)
     }
 
@@ -117,27 +116,27 @@ impl GenericInteger for BigUint {
 #[cfg(feature = "with-bigint")]
 impl GenericInteger for BigInt {
     #[inline]
-    fn _0() -> Self {
+    fn zero() -> Self {
         BigInt::zero()
     }
     #[inline]
-    fn _1() -> Self {
+    fn one() -> Self {
         BigInt::one()
     }
     #[inline]
-    fn _10() -> Self {
+    fn ten() -> Self {
         _10_BI.clone()
     }
     #[inline]
-    fn _0r() -> Option<&'static Self> {
+    fn maybe_zero() -> Option<&'static Self> {
         Some(&_0_BI)
     }
     #[inline]
-    fn _1r() -> Option<&'static Self> {
+    fn maybe_one() -> Option<&'static Self> {
         Some(&_1_BI)
     }
     #[inline]
-    fn _10r() -> Option<&'static Self> {
+    fn maybe_ten() -> Option<&'static Self> {
         Some(&_10_BI)
     }
 
@@ -155,58 +154,97 @@ impl GenericInteger for BigInt {
 }
 
 macro_rules! generic_integer_for_uint {
-    ($($t:ty),*) => {
-        $(
-            impl GenericInteger for $t {
-                #[inline]
-                fn _0() -> Self { 0 }
-                #[inline]
-                fn _1() -> Self { 1 }
-                #[inline]
-                fn _10() -> Self { 10 }
-                #[inline]
-                fn _0r() -> Option<&'static Self> { None }
-                #[inline]
-                fn _1r() -> Option<&'static Self> { None }
-                #[inline]
-                fn _10r() -> Option<&'static Self> { None }
-
-                #[inline]
-                fn get_signed_value(self) -> (Sign, Self) { (Sign::Plus, self) }
+    ($t:ty) => {
+        impl GenericInteger for $t {
+            #[inline]
+            fn zero() -> Self {
+                0
             }
-        )*
+            #[inline]
+            fn one() -> Self {
+                1
+            }
+            #[inline]
+            fn ten() -> Self {
+                10
+            }
+            #[inline]
+            fn maybe_zero() -> Option<&'static Self> {
+                None
+            }
+            #[inline]
+            fn maybe_one() -> Option<&'static Self> {
+                None
+            }
+            #[inline]
+            fn maybe_ten() -> Option<&'static Self> {
+                None
+            }
+
+            #[inline]
+            fn get_signed_value(self) -> (Sign, Self) {
+                (Sign::Plus, self)
+            }
+        }
     };
 }
 
-generic_integer_for_uint!(u8, u16, u32, u64, u128, usize);
+generic_integer_for_uint!(u8);
+generic_integer_for_uint!(u16);
+generic_integer_for_uint!(u32);
+generic_integer_for_uint!(u64);
+generic_integer_for_uint!(u128);
+generic_integer_for_uint!(usize);
 
 macro_rules! generic_integer_for_int {
-    ($($t:ty),*) => {
-        $(
-            impl GenericInteger for $t {
-                #[inline]
-                fn _0() -> Self { 0 }
-                #[inline]
-                fn _1() -> Self { 1 }
-                #[inline]
-                fn _10() -> Self { 10 }
-                #[inline]
-                fn _0r() -> Option<&'static Self> { None }
-                #[inline]
-                fn _1r() -> Option<&'static Self> { None }
-                #[inline]
-                fn _10r() -> Option<&'static Self> { None }
-
-                #[inline]
-                fn get_signed_value(self) -> (Sign, Self) {
-                    (if self.is_negative() { Sign::Minus } else { Sign::Plus }, self)
-                }
+    ($t:ty) => {
+        impl GenericInteger for $t {
+            #[inline]
+            fn zero() -> Self {
+                0
             }
-        )*
+            #[inline]
+            fn one() -> Self {
+                1
+            }
+            #[inline]
+            fn ten() -> Self {
+                10
+            }
+            #[inline]
+            fn maybe_zero() -> Option<&'static Self> {
+                None
+            }
+            #[inline]
+            fn maybe_one() -> Option<&'static Self> {
+                None
+            }
+            #[inline]
+            fn maybe_ten() -> Option<&'static Self> {
+                None
+            }
+
+            #[inline]
+            fn get_signed_value(self) -> (Sign, Self) {
+                (
+                    if self.is_negative() {
+                        Sign::Minus
+                    } else {
+                        Sign::Plus
+                    },
+                    self,
+                )
+            }
+        }
     };
 }
 
-generic_integer_for_int!(i8, i16, i32, i64, i128, isize);
+generic_integer_for_int!(i8);
+generic_integer_for_int!(i16);
+generic_integer_for_int!(i32);
+generic_integer_for_int!(i64);
+generic_integer_for_int!(i128);
+generic_integer_for_int!(isize);
 
 /// Builds integer of type T from another integer of type F in a generic way
 ///
@@ -229,129 +267,103 @@ where
 {
     let (sign, mut val) = val.get_signed_value();
 
-    let mut vptr: F = F::_1();
-    let mut rptr: T = T::_1();
-    let mut result: T = T::_0();
+    let mut vptr: F = F::one();
+    let mut rptr: T = T::one();
+    let mut result: T = T::zero();
 
     loop {
-        vptr = match F::_10r()
-            .map_or_else(
-                || vptr.checked_mul(&GenericInteger::_10()),
-                |_10| vptr.checked_mul(_10)
-            )
-        {
+        vptr = match F::maybe_ten().map_or_else(
+            || vptr.checked_mul(&GenericInteger::ten()),
+            |_10| vptr.checked_mul(_10),
+        ) {
             Some(v) => v,
             None => break,
         };
 
         let vdelta: F = val.checked_sub(&val.checked_div(&vptr)?.checked_mul(&vptr)?)?;
 
-        let mut rdelta: T = T::_0();
+        let mut rdelta: T = T::zero();
 
-        let mut vldelta: F = vdelta.checked_div(
-            &F::_10r().map_or_else(
-                || vptr.checked_div(&GenericInteger::_10()),
-                |_10| vptr.checked_div(_10)
-            )?
-        )?;
+        let mut vldelta: F = vdelta.checked_div(&F::maybe_ten().map_or_else(
+            || vptr.checked_div(&GenericInteger::ten()),
+            |_10| vptr.checked_div(_10),
+        )?)?;
 
         loop {
-            if F::_0r()
-                .map_or_else(
-                    || vldelta == GenericInteger::_0(),
-                    |v| vldelta == *v
-                )
+            if F::maybe_zero().map_or_else(|| vldelta == GenericInteger::zero(), |v| vldelta == *v)
             {
                 break;
             }
 
-            rdelta = T::_1r()
-                .map_or_else(
-                    || rdelta.checked_add(&T::_1()),
-                    |_1| rdelta.checked_add(_1)
-                )?;
+            rdelta = T::maybe_one().map_or_else(
+                || rdelta.checked_add(&T::one()),
+                |_1| rdelta.checked_add(_1),
+            )?;
 
-            vldelta = F::_1r()
-                .map_or_else(
-                    || {
-                        if sign == Sign::Plus {
-                            vldelta.checked_sub(&GenericInteger::_1())
-                        } else {
-                            vldelta.checked_add(&GenericInteger::_1())
-                        }
-                    },
-                    |_1| {
-                        if sign == Sign::Plus {
-                            vldelta.checked_sub(_1)
-                        } else {
-                            vldelta.checked_add(_1)
-                        }
+            vldelta = F::maybe_one().map_or_else(
+                || {
+                    if sign == Sign::Plus {
+                        vldelta.checked_sub(&GenericInteger::one())
+                    } else {
+                        vldelta.checked_add(&GenericInteger::one())
                     }
-                )?;
+                },
+                |_1| {
+                    if sign == Sign::Plus {
+                        vldelta.checked_sub(_1)
+                    } else {
+                        vldelta.checked_add(_1)
+                    }
+                },
+            )?;
         }
 
         result = result.checked_add(&rdelta.checked_mul(&rptr)?)?;
         val = val.checked_sub(&vdelta)?;
 
-        if F::_0r()
-            .map_or_else(
-                || val == GenericInteger::_0(),
-                |_0| val == *_0
-            )
-        {
+        if F::maybe_zero().map_or_else(|| val == GenericInteger::zero(), |_0| val == *_0) {
             break;
         }
 
-        rptr = T::_10r()
-            .map_or_else(
-                || rptr.checked_mul(&GenericInteger::_10()),
-                |_10| rptr.checked_mul(_10)
-            )?;
+        rptr = T::maybe_ten().map_or_else(
+            || rptr.checked_mul(&GenericInteger::ten()),
+            |_10| rptr.checked_mul(_10),
+        )?;
     }
 
-    if F::_0r()
-        .map_or_else(
-            || val != GenericInteger::_0(),
-            |_0| val != *_0
-        )
-    {
+    if F::maybe_zero().map_or_else(|| val != GenericInteger::zero(), |_0| val != *_0) {
         let mut vldelta: F = val.checked_div(&vptr)?;
 
-        let mut rdelta: T = T::_0();
+        let mut rdelta: T = T::zero();
 
         loop {
-            if F::_0r()
-                .map_or_else(
-                    || vldelta == GenericInteger::_0(),
-                    |_0| vldelta == *_0
-                )
+            if F::maybe_zero()
+                .map_or_else(|| vldelta == GenericInteger::zero(), |_0| vldelta == *_0)
             {
                 break;
             }
 
-            rdelta = T::_1r()
-                .map_or_else(
-                    || rdelta.checked_add(&GenericInteger::_1()),
-                    |_1| rdelta.checked_add(_1)
-                )?;
+            rdelta = T::maybe_one().map_or_else(
+                || rdelta.checked_add(&GenericInteger::one()),
+                |_1| rdelta.checked_add(_1),
+            )?;
 
-            vldelta = F::_1r()
-                .map_or_else(
-                    || {
-                        if sign == Sign::Plus {
-                            vldelta.checked_sub(&GenericInteger::_1())
-                        } else {
-                            vldelta.checked_add(&GenericInteger::_1())
-                        }
-                    },
-                    |_1| {
-                        if sign == Sign::Plus {
-                            vldelta.checked_sub(_1)
-                        } else {
-                            vldelta.checked_add(_1)
-                        }
+            vldelta = F::maybe_one().map_or_else(
+                || {
+                    if sign == Sign::Plus {
+                        vldelta.checked_sub(&GenericInteger::one())
+                    } else {
+                        vldelta.checked_add(&GenericInteger::one())
                     }
-                )?;
+                },
+                |_1| {
+                    if sign == Sign::Plus {
+                        vldelta.checked_sub(_1)
+                    } else {
+                        vldelta.checked_add(_1)
+                    }
+                },
+            )?;
         }
         result = result.checked_add(&rdelta.checked_mul(&rptr)?)?;
     }
