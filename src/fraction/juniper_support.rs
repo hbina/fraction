@@ -25,7 +25,7 @@ where
     for<'a> &'a S: ScalarRefValue<'a>,
     T: Clone + Integer + CheckedAdd + CheckedMul + CheckedSub + Display,
 {
-    fn from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
+    fn from_str(value: ScalarToken) -> ParseScalarResult<S> {
         match value {
             ScalarToken::String(val) | ScalarToken::Int(val) | ScalarToken::Float(val) => {
                 Ok(S::from(val.to_owned()))

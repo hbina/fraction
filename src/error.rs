@@ -20,9 +20,6 @@ pub enum ParseError {
     UnsupportedBase,
 }
 
-unsafe impl Send for ParseError {}
-unsafe impl Sync for ParseError {}
-
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
